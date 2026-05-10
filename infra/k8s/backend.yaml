@@ -1,0 +1,166 @@
+# Backend Deployment — app container + sidecar container
+# Backend is NOT exposed externally (ClusterIP only, ADR-0001)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: agentid-demo
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: backend-sa
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        # App container
+        - name: backend
+          image: ${ACR_NAME}.azurecr.io/agentid-backend:latest
+          ports:
+            - containerPort: 8000
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TENANT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: TENANT_ID
+            - name: BLUEPRINT_APP_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: BLUEPRINT_APP_CLIENT_ID
+            - name: CALENDAR_AGENT_IDENTITY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: CALENDAR_AGENT_IDENTITY_ID
+            - name: PROFILE_AGENT_IDENTITY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: PROFILE_AGENT_IDENTITY_ID
+            - name: DIRECTORY_AGENT_IDENTITY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: DIRECTORY_AGENT_IDENTITY_ID
+            - name: SIDECAR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: SIDECAR_URL
+            - name: FOUNDRY_PROJECT_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: FOUNDRY_PROJECT_ENDPOINT
+            - name: FOUNDRY_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: FOUNDRY_MODEL
+            - name: ALLOWED_WEB_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: WEB_CLIENT_ID
+            - name: FOUNDRY_MI_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: FOUNDRY_MI_CLIENT_ID
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: LOG_LEVEL
+            - name: SDK_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: SDK_LOG_LEVEL
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+        # Sidecar container — Entra Agent ID
+        - name: sidecar
+          image: mcr.microsoft.com/entra-sdk/auth-sidecar:1.0.0-azurelinux3.0-distroless
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: sidecar-config
+              mountPath: /app/appsettings.json
+              subPath: appsettings.json
+              readOnly: true
+          # AZURE_CLIENT_ID injected by Workload Identity webhook
+          # from backend-sa annotation (= SIDECAR_MI_CLIENT_ID).
+          # Backend selects Foundry MI explicitly in code (ADR-0004).
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+      volumes:
+        - name: sidecar-config
+          configMap:
+            name: sidecar-appsettings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: agentid-demo
+spec:
+  type: ClusterIP  # NO external exposure (ADR-0001)
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000

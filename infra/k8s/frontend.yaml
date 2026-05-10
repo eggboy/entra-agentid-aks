@@ -1,0 +1,105 @@
+# Frontend Deployment — the only externally accessible component
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: agentid-demo
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: frontend-sa
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontend
+          image: ${ACR_NAME}.azurecr.io/agentid-frontend:latest
+          ports:
+            - containerPort: 3000
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TENANT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: TENANT_ID
+            - name: WEB_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: WEB_CLIENT_ID
+            - name: BLUEPRINT_APP_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: BLUEPRINT_APP_CLIENT_ID
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: BACKEND_URL
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: agentid-secrets
+                  key: SESSION_SECRET
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: FRONTEND_BASE_URL
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: LOG_LEVEL
+            - name: SDK_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentid-config
+                  key: SDK_LOG_LEVEL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: agentid-demo
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000

@@ -1,0 +1,35 @@
+[project]
+name = "agentid-aks-frontend"
+version = "0.1.0"
+description = "Frontend: server-side auth, chat UI, backend proxy"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic-settings>=2.6.0",
+    "httpx>=0.28.0",
+    "msal>=1.31.0",
+    "jinja2>=3.1.0",
+    "itsdangerous>=2.2.0",
+    "sse-starlette>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "httpx",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[tool.deptry]
+ignore_notebooks = true
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["uvicorn", "sse-starlette", "jinja2", "pytest", "pytest-asyncio", "pytest-cov"]
+DEP003 = ["starlette"]

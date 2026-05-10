@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entra Agent ID</title>
+    <link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+<body>
+    <header>
+        <h1>Entra Agent ID</h1>
+        <div class="user-info">
+            <span>{{ user.name }}</span>
+            <a href="/auth/logout" class="btn-logout">Sign Out</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="chat-panel">
+            <div id="messages" class="messages">
+                <div class="message system">
+                    <p>I can help you with:</p>
+                    <ul>
+                        <li><strong>Calendar Briefing</strong> — "What meetings do I have today?"</li>
+                        <li><strong>Profile &amp; Org Chart</strong> — "Who is on my team?"</li>
+                        <li><strong>Directory &amp; Access</strong> — "What groups am I in?"</li>
+                    </ul>
+                    <p class="hint">All data is accessed using your identity via OBO flow through the Entra Agent ID sidecar.</p>
+                </div>
+            </div>
+
+            <form id="chat-form" class="chat-input">
+                <input type="text" id="message-input" placeholder="Ask about your calendar or org chart…" autocomplete="off" autofocus>
+                <button type="submit" id="send-btn">Send</button>
+                <button type="button" id="new-chat-btn" class="btn-new-chat" title="Start a new conversation">New Chat</button>
+            </form>
+        </div>
+
+        <div class="trace-panel">
+            <h2>Identity Trace</h2>
+            <div class="trace-actions">
+                <button id="scope-demo-btn" class="btn-scope-demo" title="Demonstrate that CalendarAgent cannot access Profile data — token only carries Calendars.Read">Scope Isolation Demo</button>
+            </div>
+            <div id="trace-log" class="trace-log">
+                <div class="trace-item info">Waiting for a request…</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/chat.js?v=4"></script>
+</body>
+</html>

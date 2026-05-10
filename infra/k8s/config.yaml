@@ -1,0 +1,88 @@
+# ConfigMap — non-secret configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentid-config
+  namespace: agentid-demo
+data:
+  TENANT_ID: "${TENANT_ID}"
+  BLUEPRINT_APP_CLIENT_ID: "${BLUEPRINT_APP_CLIENT_ID}"
+  CALENDAR_AGENT_IDENTITY_ID: "${CALENDAR_AGENT_IDENTITY_ID}"
+  PROFILE_AGENT_IDENTITY_ID: "${PROFILE_AGENT_IDENTITY_ID}"
+  DIRECTORY_AGENT_IDENTITY_ID: "${DIRECTORY_AGENT_IDENTITY_ID}"
+  WEB_CLIENT_ID: "${WEB_CLIENT_ID}"
+  FOUNDRY_PROJECT_ENDPOINT: "${FOUNDRY_PROJECT_ENDPOINT}"
+  FOUNDRY_MODEL: "$FOUNDRY_MODEL"
+  SIDECAR_MI_CLIENT_ID: "${SIDECAR_MI_CLIENT_ID}"
+  FOUNDRY_MI_CLIENT_ID: "${FOUNDRY_MI_CLIENT_ID}"
+  FRONTEND_MI_CLIENT_ID: "${FRONTEND_MI_CLIENT_ID}"
+  SIDECAR_URL: "http://localhost:8080"
+  BACKEND_URL: "http://backend:8000"
+  LOG_LEVEL: "DEBUG"
+  SDK_LOG_LEVEL: "WARNING"
+  FRONTEND_BASE_URL: "https://${INGRESS_HOST}"
+---
+# Secrets — create via kubectl:
+# kubectl create secret generic agentid-secrets \
+#   --namespace agentid-demo \
+#   --from-literal=SESSION_SECRET=<value>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agentid-secrets
+  namespace: agentid-demo
+type: Opaque
+data: {}  # Populate via kubectl or external secret management
+---
+# Sidecar appsettings as ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-appsettings
+  namespace: agentid-demo
+data:
+  appsettings.json: |
+    {
+      "AzureAd": {
+        "Instance": "https://login.microsoftonline.com/",
+        "TenantId": "${TENANT_ID}",
+        "ClientId": "${BLUEPRINT_APP_CLIENT_ID}",
+        "ClientCredentials": [
+          {
+            "SourceType": "SignedAssertionFilePath"
+          }
+        ]
+      },
+      "DownstreamApis": {
+        "GraphProfile": {
+          "Scopes": ["User.Read", "User.ReadBasic.All"],
+          "BaseUrl": "https://graph.microsoft.com/v1.0/"
+        },
+        "GraphCalendar": {
+          "Scopes": ["Calendars.Read"],
+          "BaseUrl": "https://graph.microsoft.com/v1.0/"
+        },
+        "GraphDirectory": {
+          "Scopes": ["Directory.Read.All"],
+          "BaseUrl": "https://graph.microsoft.com/v1.0/"
+        }
+      }
+    }
+---
+# ServiceAccount for backend with Workload Identity
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-sa
+  namespace: agentid-demo
+  annotations:
+    azure.workload.identity/client-id: "${SIDECAR_MI_CLIENT_ID}"
+---
+# ServiceAccount for frontend with Workload Identity
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend-sa
+  namespace: agentid-demo
+  annotations:
+    azure.workload.identity/client-id: "${FRONTEND_MI_CLIENT_ID}"

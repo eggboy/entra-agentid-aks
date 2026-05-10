@@ -1,0 +1,27 @@
+.git
+.venv
+.env
+.env.*
+__pycache__
+*.pyc
+.ruff_cache
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov/
+.DS_Store
+
+# Docs & infra (not needed in container images)
+docs/
+infra/
+tests/
+*.md
+
+# Sensitive files that must never leak into images
+appsettings.json
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+.azure/

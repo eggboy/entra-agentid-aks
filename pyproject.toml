@@ -1,0 +1,50 @@
+[project]
+name = "agentid-aks"
+version = "0.1.0"
+description = "AI agent on AKS with Microsoft Entra Agent ID and OBO flow"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["backend", "frontend"]
+
+[tool.uv]
+exclude-newer = "2026-05-09T00:00:00Z"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+    "D",    # pydocstyle
+]
+ignore = [
+    "D100",  # module docstrings (not needed for every file)
+    "D104",  # package docstrings
+    "D203",  # conflicts with D211
+    "D213",  # conflicts with D212
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["D102", "D103"]  # test method names are self-documenting
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "deptry>=0.25.1",
+]
