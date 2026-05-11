@@ -101,14 +101,16 @@ The `xms_par_app_azp` claim traces back to the **Blueprint App** that minted the
 
 ### 4. Per-Agent Audit Trail
 
-Because each Agent Identity has a distinct `azp` claim, Entra sign-in logs show exactly **which agent capability** accessed which resource for which user:
+Because each Agent Identity has a distinct `azp` claim, Entra sign-in logs (filtered by the `agentSignIn` sign-in type) show exactly **which agent capability** accessed which resource for which user:
 
-| Timestamp | User | Agent Identity | Resource | Scopes |
-|---|---|---|---|---|
-| 10:30:01 | alice@contoso.com | CalendarAgent | graph.microsoft.com | Calendars.Read |
-| 10:30:02 | alice@contoso.com | ProfileAgent | graph.microsoft.com | User.Read |
+| Timestamp | User | Agent Identity | Resource |
+|---|---|---|---|
+| 10:30:01 | alice@contoso.com | CalendarAgent | graph.microsoft.com |
+| 10:30:02 | alice@contoso.com | ProfileAgent | graph.microsoft.com |
 
 With traditional OBO, both calls would show the same app identity. You'd have no way to distinguish which tool made which call. With Entra Agent ID, security teams can audit agent actions at the capability level.
+
+> **Note:** Entra audit logs and Microsoft Graph activity logs don't currently distinguish agent identities by default. Use the **Agent type** filter in Entra sign-in logs to get per-agent visibility. See [Agent sign-in audit logs](https://learn.microsoft.com/entra/agent-id/agent-sign-in-audit-logs).
 
 ### 5. Zero External Backend Exposure
 
@@ -126,7 +128,7 @@ Internet → Ingress → Frontend Pod (MSAL auth, session management)
 
 - The **backend** has no ingress. Only reachable via ClusterIP from the frontend.
 - The **sidecar** listens on localhost only. Not reachable from outside the pod.
-- The **frontend** uses server-side MSAL (confidential client). No tokens in the browser.
+- The **frontend** uses server-side MSAL (confidential client). No tokens in the browser. The user token and MSAL token cache are stored in a server-side session keyed by a signed cookie (`SESSION_SECRET` via `itsdangerous`). The browser only receives a signed session ID, never the token itself. If the cookie is tampered with, signature verification fails and the session is rejected, preventing session forgery that could expose another user's delegated tokens.
 - **Workload Identity** eliminates client secrets on AKS. Three managed identities, zero secrets in config.
 
 ## How It Compares
