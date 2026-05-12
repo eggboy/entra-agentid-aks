@@ -83,13 +83,13 @@ The demo decodes the OBO downstream token and displays its claims in a **Token A
 ```
 Token Anatomy - GraphProfile
 ┌────────────────────────┬─────────────────────────────────────────────────────┐
-│ Audience               │ 00000003-0000-0000-c000-000000000000 (Graph)       │
-│ Issuer                 │ https://sts.windows.net/{tenant}/                  │
-│ User Object ID         │ 43d30ffe-... (signed-in user)                     │
-│ Delegated Scopes       │ openid profile User.Read User.ReadBasic.All       │
-│ User Subject           │ otZUsG73... (pairwise subject ID)                 │
-│ Tenant ID              │ a6f0e660-... (Entra tenant)                       │
-│ Parent App (Blueprint) │ ad834094-... (Blueprint App ID)                   │
+│ Audience               │ 00000003-0000-0000-c000-000000000000 (Graph)        │
+│ Issuer                 │ https://sts.windows.net/{tenant}/                   │
+│ User Object ID         │ 43d30ffe-... (signed-in user)                       │
+│ Delegated Scopes       │ openid profile User.Read User.ReadBasic.All         │
+│ User Subject           │ otZUsG73... (pairwise subject ID)                   │
+│ Tenant ID              │ a6f0e660-... (Entra tenant)                         │
+│ Parent App (Blueprint) │ ad834094-... (Blueprint App ID)                     │
 └────────────────────────┴─────────────────────────────────────────────────────┘
 ```
 
@@ -223,8 +223,6 @@ User ──(auth code)──→ Frontend ──(user token)──→ Backend ─
 │   └── pyproject.toml
 ├── infra/
 │   └── k8s/                     # AKS manifests (deployments, services, ingress)
-├── docs/
-│   └── adr/                     # Architecture Decision Records
 ├── Dockerfile.backend           # Multi-stage, non-root, hardened
 ├── Dockerfile.frontend
 ```
@@ -264,6 +262,8 @@ envsubst < infra/k8s/ingress.yaml | kubectl apply -f -
 ```
 
 ## Demo Walkthrough
+
+![Running app showing DirectoryAgent query with Identity Trace panel](images/screenshot.png)
 
 ### 1. Normal Agent Interaction
 
