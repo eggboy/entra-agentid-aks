@@ -76,6 +76,8 @@ data = await sidecar.call_downstream_api(
 
 **The demo includes a "Scope Isolation Demo" button** that deliberately triggers this violation so you can see Graph's denial in real time. The demo proves the config-level enforcement (Downstream API Entry); the IdP-level enforcement (Agent Identity consent) provides defense-in-depth.
 
+**NOTE:** The Blueprint App is still part of the trust-boundary decision. This sample uses one Blueprint and one shared runtime to demonstrate Entra Agent ID mechanics on AKS; it should not be interpreted as the recommended model for isolating mutually untrusted agents or agents with substantially different permission tiers.
+
 ### 3. Token Anatomy
 
 The demo decodes the OBO downstream token and displays its claims in a **Token Anatomy Card**:
