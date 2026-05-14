@@ -76,7 +76,8 @@ data = await sidecar.call_downstream_api(
 
 **The demo includes a "Scope Isolation Demo" button** that deliberately triggers this violation so you can see Graph's denial in real time. The demo proves the config-level enforcement (Downstream API Entry); the IdP-level enforcement (Agent Identity consent) provides defense-in-depth.
 
-> [!NOTE] The Blueprint App is still part of the trust-boundary decision. This sample uses one Blueprint and one shared runtime to demonstrate Entra Agent ID mechanics on AKS; it should not be interpreted as the recommended model for isolating mutually untrusted agents or agents with substantially different permission tiers.
+> [!NOTE]
+> The Blueprint App is still part of the trust-boundary decision. This sample uses one Blueprint and one shared runtime to demonstrate Entra Agent ID mechanics on AKS; it should not be interpreted as the recommended model for isolating mutually untrusted agents or agents with substantially different permission tiers.
 
 ### 3. Token Anatomy
 
@@ -112,7 +113,8 @@ Because each Agent Identity has a distinct `azp` claim, Entra sign-in logs (filt
 
 With traditional OBO, both calls would show the same app identity. You'd have no way to distinguish which tool made which call. With Entra Agent ID, security teams can audit agent actions at the capability level.
 
-> [!NOTE] Entra audit logs and Microsoft Graph activity logs don't currently distinguish agent identities by default. Use the **Agent type** filter in Entra sign-in logs to get per-agent visibility. See [Agent sign-in audit logs](https://learn.microsoft.com/entra/agent-id/agent-sign-in-audit-logs).
+> [!NOTE]
+> Entra audit logs and Microsoft Graph activity logs don't currently distinguish agent identities by default. Use the **Agent type** filter in Entra sign-in logs to get per-agent visibility. See [Agent sign-in audit logs](https://learn.microsoft.com/entra/agent-id/agent-sign-in-audit-logs).
 
 ### 5. Zero External Backend Exposure
 
