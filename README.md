@@ -96,7 +96,8 @@ Token Anatomy - GraphProfile
 └────────────────────────┴─────────────────────────────────────────────────────┘
 ```
 
-> **Note on token versions:** The downstream token's version is controlled by the **resource** (Microsoft Graph), not by your app. Graph currently issues v1.0 tokens, which use `appid` instead of `azp` and `iss: https://sts.windows.net/`. The demo normalises `appid` → `azp` for display consistency. See [Token claims reference for agents](https://learn.microsoft.com/entra/agent-id/agent-token-claims): "In v2 tokens, you see `azp` instead of `appid`. They both refer to the application ID of the agent identity."
+> [!NOTE]
+> The downstream token's version is controlled by the **resource** (Microsoft Graph), not by your app. Graph currently issues v1.0 tokens, which use `appid` instead of `azp` and `iss: https://sts.windows.net/`. The demo normalises `appid` → `azp` for display consistency. See [Token claims reference for agents](https://learn.microsoft.com/entra/agent-id/agent-token-claims): "In v2 tokens, you see `azp` instead of `appid`. They both refer to the application ID of the agent identity."
 
 The `azp`/`appid` claim identifies **which Agent Identity** made the call, while `oid` identifies **which user** it acted on behalf of. Traditional OBO tokens only have the app's identity in `azp`, so you can't distinguish between different agent capabilities.
 
